@@ -1,0 +1,15 @@
+extends ./layout.jade
+
+block content
+  h1 Slack Private Group Duplicator
+  form(method="POST")
+    label(for="token") Your API token
+    input(type="text", name="token", autofocus)
+
+    label(for="copyfrom") Group to copy from
+    input(type="text", name="copyfrom", autofocus)
+
+    label(for="copyto") Name of the new group
+    input(type="text", name="copyto", autofocus)
+
+    button(type="submit") Create Private Group
