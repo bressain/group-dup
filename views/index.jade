@@ -2,14 +2,21 @@ extends ./layout.jade
 
 block content
   h1 Slack Private Group Duplicator
-  form(method="POST")
+  form(name="form", novalidate, ng-controller="FormController as formCtrl", ng-init="slackApi= #{JSON.stringify(slackApi)}")
     label(for="token") Your API token
-    input(type="text", name="token", autofocus)
+    input(type="text", name="token", ng-model="formCtrl.model.token", required, autofocus)
 
     label(for="copyfrom") Group to copy from
-    input(type="text", name="copyfrom", autofocus)
+    input(type="text", name="copyfrom", ng-model="formCtrl.model.copyfrom", required)
 
     label(for="copyto") Name of the new group
-    input(type="text", name="copyto", autofocus)
+    input(type="text", name="copyto", ng-model="formCtrl.model.copyto", required)
 
-    button(type="submit") Create Private Group
+    button(type="submit", ng-click="form.$valid && formCtrl.createGroup()") Create Private Group
+
+  script(src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.js")
+  script(src="/javascripts/app.js")
+  script.
+    angular.module('GroupDup').service('configInjector', function () {
+      return '#{slackApi}';
+    });
