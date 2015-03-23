@@ -2,12 +2,20 @@
   'use strict';
 
   function FormController (groupCreateService) {
-    this.model = new GroupCreateModel();
+    var vm = this;
 
-    this.createGroup = function () {
-      console.log(this.model);
-      this.model = new GroupCreateModel();
+    vm.model = new GroupCreateModel();
+
+    vm.createGroup = function () {
+      console.log(vm.model);
+      groupCreateService.filterToGroup(vm.model.token, vm.model.copyfrom)
+        .then(cloneGroup);
     };
+
+    function cloneGroup (oldGroup) {
+      groupCreateService.createGroup(vm.model.token, vm.model.copyto, oldGroup);
+      vm.model = new GroupCreateModel();
+    }
   }
 
   function GroupCreateModel () {
@@ -16,13 +24,36 @@
     this.copyto = '';
   }
 
-  function GroupCreateService (configInjector) {
-    return function () {
+  // configInjector found in server-rendered template
+  function SlackService ($http, configInjector) {
+    return {
+      listGroups: function (token) {
+        return $http.post(configInjector.slackApi + 'groups.list', { token: token });
+      }
     };
+  }
+
+  function GroupCreateService (slackService) {
+    function filterToGroup (token, groupName) {
+      return slackService.listGroups(token)
+        .success(function (data) {
+          var groups = data.groups.filter(function (x) {
+            return x.name === groupName;
+          });
+          return groups.length > 0 ? groups[0] : null;
+        })
+        .error(function (data, status) {
+          console.log(data);
+          return null;
+        });
+    }
+
+    return { findGroup: filterToGroup };
   }
 
   angular
     .module('GroupDup', [])
-    .controller('FormController', FormController)
-    .factory('groupCreateService', GroupCreateService);
+    .factory('slackService', SlackService)
+    .factory('groupCreateService', GroupCreateService)
+    .controller('FormController', FormController);
 })();

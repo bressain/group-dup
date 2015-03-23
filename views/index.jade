@@ -18,5 +18,5 @@ block content
   script(src="/javascripts/app.js")
   script.
     angular.module('GroupDup').service('configInjector', function () {
-      return '#{slackApi}';
+      return { slackApi: '#{slackApi}' };
     });
