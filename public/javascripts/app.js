@@ -7,15 +7,9 @@
     vm.model = new GroupCreateModel();
 
     vm.createGroup = function () {
-      console.log(vm.model);
-      groupCreateService.filterToGroup(vm.model.token, vm.model.copyfrom)
-        .then(cloneGroup);
+      groupCreateService.copyGroup(vm.model)
+        .then(function () { vm.model = new GroupCreateModel(); });
     };
-
-    function cloneGroup (oldGroup) {
-      groupCreateService.createGroup(vm.model.token, vm.model.copyto, oldGroup);
-      vm.model = new GroupCreateModel();
-    }
   }
 
   function GroupCreateModel () {
@@ -28,17 +22,18 @@
   function SlackService ($http, configInjector) {
     return {
       listGroups: function (token) {
-        return $http.post(configInjector.slackApi + 'groups.list', { token: token });
+        return $http.post(configInjector.slackApi + 'groups.list', { token: token })
+          .then(function (result) { return result.data.groups; });
       }
     };
   }
 
   function GroupCreateService (slackService) {
-    function filterToGroup (token, groupName) {
-      return slackService.listGroups(token)
+    function copyGroup (groupCreateModel) {
+      return slackService.listGroups(groupCreateModel.token)
         .success(function (data) {
-          var groups = data.groups.filter(function (x) {
-            return x.name === groupName;
+          var groups = data.filter(function (x) {
+            return x.name === groupCreateModel.copyfrom;
           });
           return groups.length > 0 ? groups[0] : null;
         })
@@ -48,7 +43,7 @@
         });
     }
 
-    return { findGroup: filterToGroup };
+    return { copyGroup: copyGroup };
   }
 
   angular
