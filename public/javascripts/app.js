@@ -31,17 +31,23 @@
   function GroupCreateService (slackService) {
     function copyGroup (groupCreateModel) {
       return slackService.listGroups(groupCreateModel.token)
-        .success(function (data) {
-          var groups = data.filter(function (x) {
-            return x.name === groupCreateModel.copyfrom;
-          });
-          return groups.length > 0 ? groups[0] : null;
-        })
-        .error(function (data, status) {
-          console.log(data);
-          return null;
+        .then(function (groups) {
+          slackService.createGroup(groupCreateModel.token, groupCreateModel.copyto)
+            .then(function (newGroup) {
+              var oldGroup = getGroupToCopyFrom(groups, groupCreateModel.copyfrom);
+              oldGroup.members.forEach(function (x) {
+                slackService.inviteToGroup(groupCreateModel.token, newGroup.id, x);
+              });
+            });
         });
     }
+
+    function getGroupToCopyFrom (groups, copyfrom) {
+      var filtered = groups.filter(function (x) {
+        return x.name === copyfrom;
+      });
+      return filtered.length > 0 ? filtered[0] : null;
+    } 
 
     return { copyGroup: copyGroup };
   }

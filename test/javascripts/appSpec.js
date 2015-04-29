@@ -63,6 +63,69 @@ describe('GroupDup', function () {
     });
   });
 
+  describe('groupCreateService', function () {
+    var groupCreateService;
+    var slackService;
+    var model = { token: 'derp', copyto: 'new-group', copyfrom: 'old-group' };
+
+    beforeEach(function () {
+      angular.mock.module('GroupDup', function($provide) {
+        slackService = {
+          listGroups: function (token) {
+            return { then: function (f) { f([{name:model.copyfrom, members:[]}]); } };
+          },
+          createGroup: function (token, name) {
+            return { then: function (f) { f(); } };
+          },
+          inviteToGroup: function (token, groupId, userId) {
+            return { then: function (f) { f(); } };
+          }
+        };
+
+        $provide.value('slackService', slackService);
+      });
+
+      inject(function(_groupCreateService_) {
+        groupCreateService = _groupCreateService_;
+      });
+    });
+
+    it('should get all the groups from slack', function () {
+      spyOn(slackService, 'listGroups').and.callThrough();
+
+      groupCreateService.copyGroup(model);
+
+      expect(slackService.listGroups).toHaveBeenCalled();
+      expect(slackService.listGroups.calls.argsFor(0)).toEqual([model.token]);
+    });
+
+    it('should tell slack to create a new group', function () {
+      spyOn(slackService, 'createGroup').and.callThrough();
+
+      groupCreateService.copyGroup(model);
+
+      expect(slackService.createGroup).toHaveBeenCalled();
+      expect(slackService.createGroup.calls.argsFor(0)).toEqual([model.token, model.copyto]);
+    });
+
+    it('should invite users from the copied group to the new group', function () {
+      var groups = [{name: 'G1', members: []}, {name: model.copyfrom, members: ['U1', 'U2']}, {name: 'G3', members: []}];
+      spyOn(slackService, 'listGroups').and.callFake(function (token) {
+        return { then: function (f) { f(groups); } };
+      });
+      spyOn(slackService, 'createGroup').and.callFake(function (token, name) {
+        return { then: function (f) { f({id: 'NG1'}); } };
+      });
+      spyOn(slackService, 'inviteToGroup').and.callThrough();
+
+      groupCreateService.copyGroup(model);
+
+      expect(slackService.inviteToGroup).toHaveBeenCalled();
+      expect(slackService.inviteToGroup.calls.argsFor(0)).toEqual([model.token, 'NG1', 'U1']);
+      expect(slackService.inviteToGroup.calls.argsFor(1)).toEqual([model.token, 'NG1', 'U2']);
+    });
+  });
+
   it('passes because canary', function () {
     expect(true).toBe(true);
   });
