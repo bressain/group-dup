@@ -18,19 +18,18 @@
     this.copyto = '';
   }
 
-  // configInjector found in server-rendered template
   function SlackService ($http, configInjector) {
     return {
       listGroups: function (token) {
-        return $http.post(configInjector.slackApi + 'groups.list', { token: token })
+        return $http.post(configInjector.baseUri + 'listgroups', { token: token })
           .then(function (result) { return result.data.groups; });
       },
       createGroup: function (token, name) {
-        return $http.post(configInjector.slackApi + 'groups.create', { token: token, name: name })
+        return $http.post(configInjector.baseUri + 'creategroup', { token: token, name: name })
           .then(function (result) { return result.data.group; });
       },
       inviteToGroup: function (token, groupId, userId) {
-        return $http.post(configInjector.slackApi + 'groups.invite', { token: token, channel: groupId, user: userId })
+        return $http.post(configInjector.baseUri + 'invitetogroup', { token: token, channel: groupId, user: userId })
           .then(function (result) { return result.data; });
       }
     };

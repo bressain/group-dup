@@ -45,7 +45,7 @@ describe('GroupDup', function () {
     var token = 'teh-token';
 
     beforeEach(angular.mock.module('GroupDup', function ($provide) {
-      configInjector = { slackApi: 'slackApi.' };
+      configInjector = { baseUri: 'baseUri.' };
       $provide.value('configInjector', configInjector);
     }));
 
@@ -56,7 +56,7 @@ describe('GroupDup', function () {
 
     it('should post groups.list for the group name', function () {
       var result = null;
-      httpBackend.expectPOST('slackApi.groups.list', { token: token }).respond(200, {ok:true, groups:[{},{}]});
+      httpBackend.expectPOST('baseUri.listgroups', { token: token }).respond(200, {ok:true, groups:[{},{}]});
       
       slackService.listGroups(token).then(function (x) { result = x; });
       httpBackend.flush();
@@ -67,7 +67,7 @@ describe('GroupDup', function () {
     it('should post groups.create to create the new group', function () {
       var result = null;
       var name = 'new-name';
-      httpBackend.expectPOST('slackApi.groups.create', { token: token, name: name })
+      httpBackend.expectPOST('baseUri.creategroup', { token: token, name: name })
         .respond(200, { ok: true, group: { name: name } });
 
       slackService.createGroup(token, name).then(function (x) { result = x; });
@@ -78,7 +78,7 @@ describe('GroupDup', function () {
 
     it('should post groups.invite to invite a new user to a group', function () {
       var result = null;
-      httpBackend.expectPOST('slackApi.groups.invite', { token: token, channel: 'G1', user: 'U1' })
+      httpBackend.expectPOST('baseUri.invitetogroup', { token: token, channel: 'G1', user: 'U1' })
         .respond(200, { ok: true, group: {} });
 
       slackService.inviteToGroup(token, 'G1', 'U1').then(function (x) { result = x; });
