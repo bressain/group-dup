@@ -10,26 +10,34 @@ router.get('/', function (req, res, next) {
 
 /* POST request dup group from home page */
 router.post('/', function (req, res) {
-  dupGroup(req, res);
+  dupGroup(req.body, res);
 });
 
-function dupGroup(req, res) {
+router.post('/dupgroup', function (req, res) {
+  dupGroup({
+    token: req.body.token,
+    copyfrom: req.body.channel_name,
+    copyto: req.body.text
+  }, res);
+});
+
+function dupGroup(opts, res) {
   var groups;
   var newGroup;
   var oldGroup;
 
-  hitSlackApi('groups.list', { token: req.body.token }, function (err, response, body) {
+  hitSlackApi('groups.list', { token: opts.token }, function (err, response, body) {
     if (err || response.statusCode !== 200) return;
     groups = body.groups;
 
-    hitSlackApi('groups.create', { token: req.body.token, name: req.body.copyto }, function (err, response, body) {
+    hitSlackApi('groups.create', { token: opts.token, name: opts.copyto }, function (err, response, body) {
       if (err || response.statusCode !== 200) return;
       newGroup = body.group;
-      oldGroup = getGroupToCopyFrom(groups, req.body.copyfrom);
+      oldGroup = getGroupToCopyFrom(groups, opts.copyfrom);
 
       oldGroup.members.forEach(function (x) {
         setTimeout(function () {
-          hitSlackApi('groups.invite', { token: req.body.token, channel: newGroup.id, user: x});
+          hitSlackApi('groups.invite', { token: opts.token, channel: newGroup.id, user: x});
         }, 100);
       });
 
