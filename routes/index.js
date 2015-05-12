@@ -15,7 +15,7 @@ router.post('/', function (req, res) {
 
 router.post('/dupgroup', function (req, res) {
   dupGroup({
-    token: req.body.token,
+    token: config.slack.token,
     copyfrom: req.body.channel_name,
     copyto: req.body.text
   }, res);
