@@ -26,6 +26,8 @@ function dupGroup(opts, res) {
   var newGroup;
   var oldGroup;
 
+  console.log('Request to dup group: ');
+  console.dir(opts);
   hitSlackApi('groups.list', { token: opts.token }, function (err, response, body) {
     if (err || response.statusCode !== 200) return;
     groups = body.groups;
