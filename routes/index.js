@@ -17,6 +17,7 @@ router.post('/dupgroup', function (req, res) {
   dupGroup({
     token: config.slack.token,
     copyfrom: req.body.channel_name,
+    copyfromid: req.body.channel_id,
     copyto: req.body.text
   }, res);
 });
@@ -25,6 +26,7 @@ function dupGroup(opts, res) {
   var groups;
   var newGroup;
   var oldGroup;
+  opts.copyfromid = opts.copyfromid || '';
 
   console.log('Request to dup group:');
   console.dir(opts);
@@ -39,7 +41,7 @@ function dupGroup(opts, res) {
       console.log('groups.create response:');
       console.dir(body);
       newGroup = body.group;
-      oldGroup = getGroupToCopyFrom(groups, opts.copyfrom);
+      oldGroup = getGroupToCopyFrom(groups, opts.copyfrom, opts.copyfromid);
 
       oldGroup.members.forEach(function (x) {
         setTimeout(function () {
@@ -52,9 +54,9 @@ function dupGroup(opts, res) {
   });
 }
 
-function getGroupToCopyFrom (groups, copyfrom) {
+function getGroupToCopyFrom (groups, copyfrom, copyfromid) {
   var filtered = groups.filter(function (x) {
-    return x.name === copyfrom;
+    return x.name === copyfrom || x.id === copyfromid;
   });
   return filtered.length > 0 ? filtered[0] : null;
 }
