@@ -32,14 +32,10 @@ function dupGroup(opts, res) {
   console.dir(opts);
   hitSlackApi('groups.list', { token: opts.token }, function (err, response, body) {
     if (err || response.statusCode !== 200 || !body.ok) return;
-    console.log('groups.list response:');
-    console.dir(body);
     groups = body.groups;
 
     hitSlackApi('groups.create', { token: opts.token, name: opts.copyto }, function (err, response, body) {
       if (err || response.statusCode !== 200 || !body.ok) return;
-      console.log('groups.create response:');
-      console.dir(body);
       newGroup = body.group;
       oldGroup = getGroupToCopyFrom(groups, opts.copyfrom, opts.copyfromid);
 
